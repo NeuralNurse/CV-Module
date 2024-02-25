@@ -1,6 +1,5 @@
 from ultralytics import YOLO
 import cv2
-import cvzone
 import math
 
 cap = cv2.VideoCapture(0)
@@ -101,7 +100,7 @@ while True:
             x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
             cv2.rectangle(img, (x1, y1), (x2, y2), color=(255, 0, 0), thickness=1)
 
-            conf = math.ceil((box.conf[0] * 100)) / 100
+            confidence = math.ceil((box.conf[0] * 100)) / 100
 
             object_cls = box.cls[0]
             name = classNames[int(object_cls)]
@@ -111,4 +110,5 @@ while True:
     cv2.imshow("Image", img)
     if cv2.waitKey(20) & 0xFF == ord('q'):
         break
+    fps = cap.get(cv2.CAP_PROP_FPS)
 
