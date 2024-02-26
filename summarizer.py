@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-api_key = "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"
+api_key = "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"
 
 client = OpenAI(api_key=api_key)
 
@@ -27,5 +27,3 @@ def extract_information(user_input):
 
     return output
 
-user_input = "my name is jeff and "
-result = extract_information(user_input)

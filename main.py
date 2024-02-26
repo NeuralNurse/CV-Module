@@ -11,6 +11,7 @@ from ultralytics import YOLO
 import math
 import pyttsx3
 from summarizer import extract_information
+from items import Item
 
 def speak_text(command):
     engine = pyttsx3.init()
@@ -19,7 +20,7 @@ def speak_text(command):
 
 def speak_thread(command):
 	speak_thread = threading.Thread(
-		target=self.speak_text, args=(command,)
+		target=speak_text, args=(command,)
 		)
 	speak_thread.start()
 
@@ -28,14 +29,21 @@ class Camera:
 		self.in_progress = []
 		self.r = sr.Recognizer()
 		self.video_capture = cv2.VideoCapture(0)
-		self.video_capture.set(3, 1280)
-		self.video_capture.set(4, 720)
+		self.w = 1280
+		self.h = 720
+		self.video_capture.set(3, self.w)
+		self.video_capture.set(4, self.h)
 		self.set_up_recognition()
 		self.model = YOLO("../YOLO Weights/yolov8s.pt")
 		with open('classes.txt') as f:
 			self.classes = f.read().splitlines()
+		self.name_queue = []
 		self.speaking_queue = []
-		self.already_said = []
+		self.item_already_said = []
+		self.name_already_said = []
+		#tag = threading.Thread(target=self.speaker_thread, args=())
+		#tag.start()
+
 
 	def set_up_recognition_backup(self):
 		obama_image = face_recognition.load_image_file("obama.jpg")
@@ -73,6 +81,7 @@ class Camera:
 
 				text = self.r.recognize_google(audio2)
 				text = text.lower()
+
 				info = extract_information(text)
 				if "unknown" in info.lower():
 					self.in_progress.remove(face_encoding)
@@ -100,6 +109,14 @@ class Camera:
 		except sr.UnknownValueError:
 			print("unknown error occurred")
 			self.in_progress.remove(face_encoding)
+
+	def speaker_thread(self):
+		while True:
+			for obj in self.name_queue:
+				side, name = obj
+				speak_thread(f"On your {side} is {name}")
+				self.name_queue.remove([side, name])
+				time.sleep(4)
 
 	def main_loop(self):
 		while True:
@@ -132,7 +149,7 @@ class Camera:
 						face_names.append(name)
 
 					else:
-						face_names.append("detecting... ")
+						face_names.append("Detecting... ")
 						if self.in_progress != []:
 							continue
 						self.in_progress.append(face_encoding)
@@ -148,7 +165,17 @@ class Camera:
 				right *= 4
 				bottom *= 4
 				left *= 4
-
+				midpoint = left + ((right - left) / 2)
+				if (midpoint / self.w > 0.66):
+					side = "left"
+				elif (midpoint / self.w > 0.33):
+					side = "middle"
+				else:
+					side = "right"
+				if(name in self.name_already_said):
+					pass
+				else:
+					self.name_queue.append([side, name])
 				cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
 				cv2.rectangle(
@@ -166,6 +193,19 @@ class Camera:
 					if name == "person":
 						continue
 					x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+					midpoint = x1 + ((x2 - x1) / 2)
+					if (midpoint / self.w > 0.66):
+						side = "left"
+					elif (midpoint / self.w > 0.33):
+						side = "middle"
+					else:
+						side = "right"
+					it = Item(name, side)
+					if(it.hash in self.item_already_said):
+						pass
+					else:
+						self.speaking_queue.append(it)
+						self.item_already_said.append(it.hash)
 					cv2.rectangle(frame, (x1, y1), (x2, y2), color=(255, 0, 0), thickness=1)
 
 					confidence = math.ceil((box.conf[0] * 100)) / 100
