@@ -12,11 +12,11 @@ import math
 import pyttsx3
 from summarizer import extract_information
 from items import Item
+import os
+
 
 def speak_text(command):
-    engine = pyttsx3.init()
-    engine.say(command) 
-    engine.runAndWait()
+	os.system("say" " " + command) 
 
 def speak_thread(command):
 	speak_thread = threading.Thread(
@@ -41,8 +41,8 @@ class Camera:
 		self.speaking_queue = []
 		self.item_already_said = []
 		self.name_already_said = []
-		#tag = threading.Thread(target=self.speaker_thread, args=())
-		#tag.start()
+		tag = threading.Thread(target=self.speaker_thread, args=())
+		tag.start()
 
 
 	def set_up_recognition_backup(self):
@@ -117,6 +117,9 @@ class Camera:
 				speak_thread(f"On your {side} is {name}")
 				self.name_queue.remove([side, name])
 				time.sleep(4)
+			for obj in self.speaking_queue:
+				speak_thread(f"On your {obj.side} is a {obj.item}")
+
 
 	def main_loop(self):
 		while True:
@@ -175,6 +178,7 @@ class Camera:
 				if(name in self.name_already_said):
 					pass
 				else:
+					self.name_already_said.append(name)
 					self.name_queue.append([side, name])
 				cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
