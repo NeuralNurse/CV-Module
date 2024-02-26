@@ -95,11 +95,6 @@ classNames = [
 while True:
     success, img = cap.read()
     results = model(img, stream=True)
-    small_frame = cv2.resize(img, (0, 0), fx=0.25, fy=0.25)
-    rgb_small_frame = small_frame[:, :, ::-1]
-    face_locations = face_recognition.face_locations(rgb_small_frame)
-    if(face_locations):
-        print(face_locations[0])
     for r in results:
         boxes = r.boxes
         for box in boxes:
