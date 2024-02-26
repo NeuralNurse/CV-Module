@@ -114,12 +114,14 @@ class Camera:
 		while True:
 			for obj in self.name_queue:
 				side, name = obj
-				speak_thread(f"On your {side} is {name}")
+				print(f"On your {side} is {name}")
 				self.name_queue.remove([side, name])
-				time.sleep(4)
+				time.sleep(1)
 			for obj in self.speaking_queue:
-				speak_thread(f"On your {obj.side} is a {obj.item}")
+				print(f"On your {obj.side} is a {obj.item}")
 				self.speaking_queue.remove(obj)
+				time.sleep(1)
+			time.sleep(2)
 
 
 	def main_loop(self):
@@ -205,12 +207,17 @@ class Camera:
 						side = "middle"
 					else:
 						side = "right"
+					for item in self.item_already_said:
+						if item.check_time() == True:
+							self.item_already_said.remove(item)
 					it = Item(name, side)
-					if(it.hash in self.item_already_said):
-						pass
-					else:
+					k = True
+					for item in self.item_already_said:
+						if item.hash == it.hash:
+							k = False
+					if k == True:
 						self.speaking_queue.append(it)
-						self.item_already_said.append(it.hash)
+						self.item_already_said.append(it)
 					cv2.rectangle(frame, (x1, y1), (x2, y2), color=(255, 0, 0), thickness=1)
 
 					confidence = math.ceil((box.conf[0] * 100)) / 100
