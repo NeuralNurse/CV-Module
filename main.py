@@ -10,6 +10,7 @@ import speech_recognition as sr
 from ultralytics import YOLO
 import math
 import pyttsx3
+from summarizer import extract_information
 
 def speak_text(command):
     engine = pyttsx3.init()
@@ -21,6 +22,7 @@ def speak_thread(command):
 		target=self.speak_text, args=(command,)
 		)
 	speak_thread.start()
+
 class Camera:
 	def __init__(self):
 		self.in_progress = []
@@ -31,7 +33,9 @@ class Camera:
 		self.set_up_recognition()
 		self.model = YOLO("../YOLO Weights/yolov8s.pt")
 		with open('classes.txt') as f:
-			self.classes = f.read().splitlines() 
+			self.classes = f.read().splitlines()
+		self.speaking_queue = []
+		self.already_said = []
 
 	def set_up_recognition_backup(self):
 		obama_image = face_recognition.load_image_file("obama.jpg")
@@ -69,6 +73,20 @@ class Camera:
 
 				text = self.r.recognize_google(audio2)
 				text = text.lower()
+				info = extract_information(text)
+				if "unknown" in info.lower():
+					self.in_progress.remove(face_encoding)
+					print("error")
+					return
+				if ":" in info:
+					name, relationship = info.split(":")
+				elif "," in info:
+					name, relationship = info.split(",")
+				else:
+					self.in_progress.remove(face_encoding)
+					print("error")
+					return
+				text = f"{name}: {relationship}"
 
 				self.known_face_encodings.append(face_encoding)
 				self.known_face_names.append(text)
