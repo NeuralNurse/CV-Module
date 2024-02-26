@@ -119,6 +119,7 @@ class Camera:
 				time.sleep(4)
 			for obj in self.speaking_queue:
 				speak_thread(f"On your {obj.side} is a {obj.item}")
+				self.speaking_queue.remove(obj)
 
 
 	def main_loop(self):
