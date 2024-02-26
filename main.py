@@ -9,9 +9,18 @@ import threading
 import speech_recognition as sr
 from ultralytics import YOLO
 import math
+import pyttsx3
 
-STORED_ENCODINGS = []
+def speak_text(command):
+    engine = pyttsx3.init()
+    engine.say(command) 
+    engine.runAndWait()
 
+def speak_thread(command):
+	speak_thread = threading.Thread(
+		target=self.speak_text, args=(command,)
+		)
+	speak_thread.start()
 class Camera:
 	def __init__(self):
 		self.in_progress = []
@@ -27,7 +36,6 @@ class Camera:
 	def set_up_recognition_backup(self):
 		obama_image = face_recognition.load_image_file("obama.jpg")
 		obama_face_encoding = face_recognition.face_encodings(obama_image)[0]
-		print(obama_face_encoding.dtype)
 
 		biden_image = face_recognition.load_image_file("biden.jpg")
 		biden_face_encoding = face_recognition.face_encodings(biden_image)[0]
@@ -65,6 +73,7 @@ class Camera:
 				self.known_face_encodings.append(face_encoding)
 				self.known_face_names.append(text)
 				self.in_progress.remove(face_encoding)
+				print("end")
 
 		except sr.RequestError as e:
 			print("Could not request results; {0}".format(e))
